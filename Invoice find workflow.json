@@ -1,0 +1,288 @@
+{
+  "name": "Invoice find workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "0493bd5e-2ad0-4a72-bb29-ce86ee0af966",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K_rjzgSFNe-JbaGqU0Fw_eaUnjDPhXU-3pUAfywfWEM",
+          "mode": "list",
+          "cachedResultName": "customer_records_with_due_date",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K_rjzgSFNe-JbaGqU0Fw_eaUnjDPhXU-3pUAfywfWEM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 924471706,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K_rjzgSFNe-JbaGqU0Fw_eaUnjDPhXU-3pUAfywfWEM/edit#gid=924471706"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "4567737c-3950-43d8-92da-1bc70f8d825f",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xBKWxJeZsyed5U5L",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "331c2aec-2c30-4a8d-a032-4047c3a05511",
+              "leftValue": "={{ $json['Payment Status'] }}",
+              "rightValue": "Paid",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "a6a43621-3771-4987-b058-929f94b499a1",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "Your invoice is due",
+        "message": "=HI  {{ $json['Customer Name'] }} your invoice is due by {{ $json['Invoice Due'] }} please make sure your invoice before.{{ $json['Due Date'] }}\nRegards,\nAccounting team .",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -192
+      ],
+      "id": "a70b8618-49f2-40ad-ae57-671349ba876e",
+      "name": "Send a message",
+      "webhookId": "3e40d4cb-03de-4624-8438-f3e5a1bfd2ea",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "34KaQhbXtEutMjRu",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "Important ! your invoice is passed due.",
+        "message": "=Hi {{ $json['Customer Name'] }} This is to inform you that ,your invoice is passed due .Please pay your invoice ASAP, to avoid furthure penality ,\nRegards,\nBilling department .",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        0
+      ],
+      "id": "c9b207f9-a2fc-419b-9a35-24c47b1c9f33",
+      "name": "Send a message1",
+      "webhookId": "f92546d6-a926-4246-a5c8-54593ca46d22",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "34KaQhbXtEutMjRu",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['Payment Status'] }}",
+                    "rightValue": "Unpaid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6d0c8f56-f388-4a64-bcf2-6515e6045830"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3f4a5aaf-57ac-4809-b119-e821e675052d",
+                    "leftValue": "={{ $json['Payment Status'] }}",
+                    "rightValue": "Overdue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -16
+      ],
+      "id": "12c32561-6f9e-4c30-8bbf-17c2fb662099",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "Necsoledigital@gmail.com",
+        "subject": "Embegious invoices ",
+        "message": "=Hi team get this invoice . {{ $json['Customer Name'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        192
+      ],
+      "id": "53259200-3ed8-45cf-8bfb-24cdc5eb6f9a",
+      "name": "Send a message2",
+      "webhookId": "671fea16-ffac-4ff3-900f-e16c83cd1761",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "34KaQhbXtEutMjRu",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "126f9ba9-9dfe-4679-851f-d47cbbf69128",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e687a404cec64273f0d926ad63bede7ce952f982b87d231ad84f0ff78380f4c3"
+  },
+  "id": "pvFPuHHmZqFF1aqlZEPdj",
+  "tags": []
+}
